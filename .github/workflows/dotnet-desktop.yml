@@ -23,7 +23,7 @@ jobs:
       run: nuget restore Rubeus\Rubeus.csproj -PackagesDirectory Rubeus\packages
 
     - name: Build Rubeus (Release)
-      run: msbuild Rubeus\Rubeus.csproj /p:Configuration=Release /p:Platform="Any CPU"
+      run: msbuild Rubeus\Rubeus.csproj /p:Configuration=Release /p:Platform="AnyCPU"
 
     - name: Locate output
       run: Get-ChildItem -Recurse -Filter "Rubeus.exe" | Select-Object FullName
