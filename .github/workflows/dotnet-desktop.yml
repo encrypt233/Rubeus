@@ -19,21 +19,28 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    # 关键步骤 1：用 nuget install 明确安装到 packages 目录
+    # 1. 下载 .NET 4.0 引用程序集 NuGet 包
     - name: Install .NET 4.0 Reference Assemblies
       run: >
         nuget install Microsoft.NETFramework.ReferenceAssemblies.net40
         -Version 1.0.3
         -OutputDirectory ${{ github.workspace }}\packages
 
-    # 关键步骤 2：构建时显式开启 NuGet 引用程序集，并指向包内路径
+    # 2. 将 v4.0 文件夹复制到 MSBuild 期望的系统路径
+    - name: Copy v4.0 Reference Assemblies to System Path
+      shell: pwsh
+      run: |
+        $source = "${{ github.workspace }}\packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\.NETFramework\v4.0"
+        $dest = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+        if (-not (Test-Path $dest)) {
+          New-Item -ItemType Directory -Path $dest -Force
+        }
+        Copy-Item -Path "$source\*" -Destination $dest -Recurse -Force
+        Write-Host "Copied v4.0 reference assemblies to system path."
+
+    # 3. 正常构建（不再需要任何特殊 MSBuild 参数）
     - name: Build Rubeus (Release)
-      run: >
-        msbuild Rubeus\Rubeus.csproj
-        /p:Configuration=Release
-        /p:Platform=AnyCPU
-        /p:UseReferenceAssembliesFromPackage=true
-        /p:TargetFrameworkRootPath="${{ github.workspace }}\packages\Microsoft.NETFramework.ReferenceAssemblies.net40.1.0.3\build\.NETFramework"
+      run: msbuild Rubeus\Rubeus.csproj /p:Configuration=Release /p:Platform=AnyCPU
 
     - name: Locate Rubeus.exe
       run: Get-ChildItem -Recurse -Filter "Rubeus.exe" | Select-Object FullName
