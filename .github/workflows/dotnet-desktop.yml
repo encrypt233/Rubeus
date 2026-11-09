@@ -19,13 +19,14 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    - name: Restore NuGet packages
-      run: nuget restore Rubeus\Rubeus.csproj -PackagesDirectory Rubeus\packages
+    # 关键步骤：直接安装 .NET 4.0 引用程序集 NuGet 包到本地目录
+    - name: Install .NET 4.0 Reference Assemblies
+      run: nuget install Microsoft.NETFramework.ReferenceAssemblies.net40 -Version 1.0.3 -OutputDirectory packages
 
     - name: Build Rubeus (Release)
-      run: msbuild Rubeus\Rubeus.csproj /p:Configuration=Release /p:Platform="AnyCPU"
+      run: msbuild Rubeus\Rubeus.csproj /p:Configuration=Release /p:Platform=AnyCPU
 
-    - name: Locate output
+    - name: Locate Rubeus.exe
       run: Get-ChildItem -Recurse -Filter "Rubeus.exe" | Select-Object FullName
 
     - name: Upload artifact
